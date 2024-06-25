@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model admins {
+  admin_id      Int       @id @default(autoincrement())
+  email         String    @unique(map: "email") @db.VarChar(150)
+  password      String    @db.VarChar(100)
+  role          String?   @db.VarChar(50)
+  slug          String?   @db.VarChar(255)
+  created_at    DateTime  @db.DateTime(0)
+  updated_at    DateTime? @db.DateTime(0)
+  deleted_at    DateTime? @db.DateTime(0)
+  refresh_token String?   @db.VarChar(255)
+}
+
+model book {
+  user_id      Int
+  trek_id      Int
+  booking_date DateTime @db.Date
+  state        String   @db.VarChar(50)
+  users        users    @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "book_ibfk_1")
+  treks        treks    @relation(fields: [trek_id], references: [trek_id], onDelete: NoAction, onUpdate: NoAction, map: "book_ibfk_2")
+
+  @@id([user_id, trek_id])
+  @@index([trek_id], map: "trek_id")
+}
+
+model guides {
+  guide_id         Int       @id @default(autoincrement())
+  firstname        String    @db.VarChar(150)
+  lastname         String    @db.VarChar(150)
+  email            String    @unique(map: "email") @db.VarChar(150)
+  password         String    @db.VarChar(100)
+  created_at       DateTime  @db.DateTime(0)
+  updated_at       DateTime? @db.DateTime(0)
+  deleted_at       DateTime? @db.DateTime(0)
+  guide_picture    String?   @db.VarChar(255)
+  refresh_token    String?   @db.VarChar(255)
+  description      String?   @db.VarChar(255)
+  experience_years Int?      @db.TinyInt
+  role             String?   @db.VarChar(50)
+  slug             String?   @db.VarChar(255)
+  treks            treks[]
+}
+
+model parcours {
+  parcours_id      Int     @id @default(autoincrement())
+  name             String  @db.VarChar(255)
+  duration         Int     @default(0)
+  price            Int?
+  parcours_picture String  @db.VarChar(255)
+  difficulty       Int     @db.TinyInt
+  country          String? @db.VarChar(255)
+  slug             String? @unique @db.VarChar(255)
+  description      String  @db.VarChar(255)
+  steps            steps[]
+  treks            treks[]
+}
+
+model steps {
+  step_id          Int      @id @default(autoincrement())
+  step_name        String?  @db.VarChar(255)
+  step_slug        String?  @db.VarChar(255)
+  step_latitude    String   @db.Char(12)
+  step_longitude   String   @db.Char(12)
+  step_picture     String?  @db.VarChar(255)
+  step_description String   @db.VarChar(255)
+  parcours_id      Int
+  parcours         parcours @relation(fields: [parcours_id], references: [parcours_id], onDelete: NoAction, onUpdate: NoAction, map: "steps_ibfk_1")
+
+  @@index([parcours_id], map: "parcours_id")
+}
+
+model treks {
+  trek_id     Int      @id @default(autoincrement())
+  begin_date  DateTime @db.Date
+  end_date    DateTime @db.Date
+  min_places  Int      @db.TinyInt
+  max_places  Int      @db.TinyInt
+  trek_state  String   @db.VarChar(50)
+  slug        String?  @db.VarChar(50)
+  guide_id    Int
+  parcours_id Int
+  book        book[]
+  guides      guides   @relation(fields: [guide_id], references: [guide_id], onDelete: NoAction, onUpdate: NoAction, map: "treks_ibfk_1")
+  parcours    parcours @relation(fields: [parcours_id], references: [parcours_id], onDelete: NoAction, onUpdate: NoAction, map: "treks_ibfk_2")
+
+  @@index([guide_id], map: "guide_id")
+  @@index([parcours_id], map: "parcours_id")
+}
+
+model users {
+  user_id        Int       @id @default(autoincrement())
+  firstname      String    @db.VarChar(150)
+  lastname       String    @db.VarChar(150)
+  email          String    @unique(map: "email") @db.VarChar(150)
+  password       String    @db.VarChar(100)
+  client_picture String?   @db.VarChar(255)
+  role           String    @db.VarChar(50)
+  created_at     DateTime  @db.DateTime(0)
+  updated_at     DateTime? @db.DateTime(0)
+  deleted_at     DateTime? @db.DateTime(0)
+  refresh_token  String?   @db.VarChar(255)
+  slug           String?   @db.VarChar(255)
+  book           book[]
+}
